@@ -5,7 +5,7 @@ This does not use Photoshop or GIMP, just a **Linux environment**, **ffmpeg** an
 
 ### What is Seam Carving/Liquid Rescaling/Content Aware Scale?
 
-Seam carving, which was named Content Aware Scale and made accessible by Adobe through Photoshop, is a method of image rescaling by carve "seams" around areas of (guessed) importance in order to preserve them while removing pixels on that path. It is "content-aware," thus the name. Learn more about it here: https://en.wikipedia.org/wiki/Seam_carving. It is also known as liquid rescaling. It's made its way into meme culture because of the funny ways it can change images.
+Seam carving, which was named Content Aware Scale and made accessible by Adobe through Photoshop, is a method of image rescaling by carving "seams" around areas of (guessed) importance in order to preserve them while removing pixels on that path. It is "content-aware," thus the name. Learn more about it here: https://en.wikipedia.org/wiki/Seam_carving. It is also known as liquid rescaling. It's made its way into meme culture because of the funny ways it can change images.
 
 Usually when you want to perform that on an image you would use Photoshop's Content Aware Scale tool. However, the algorithm for doing so is actually public and has been ported onto various other software. One of which is ImageMagick, a terminal-based, powerful image manipulation tool. (https://imagemagick.org/index.php) It has implemented seam carving. 
 
@@ -23,7 +23,7 @@ The second step takes VERY long by itself, but is much, much faster than doing i
 
 #### Basic Usage
 
-In order to use the script, place it into the folder where you want it to work in. Preferrably one with the source video in it. After that, simply run the script using `./video-lqr`. The script is interactive when used without arguments, so it will ask you for all the information it needs:
+In order to use the script, place it into the folder where you want it to work in. Preferrably one with the source video in it. After that, simply run the script using `./video-lqr.sh`. The script is interactive when used without arguments, so it will ask you for all the information it needs:
 
 1. Source video
 2. Output video<br>
@@ -54,7 +54,7 @@ If none are entered then the script will act interactively.
 
 ##### Reusing Frames
 
-The script creates a temporary directory at startup if it doesn't exist. If files are found in it, it will ask whether or not it should delete the files, and if not, whether or not to process those files. If you choose yes on processing those files, it will skip the initial steps of splitting the video into individual frames and will immediately start processing the frames of the previous source video.
+The script creates a temporary directory at startup if it doesn't exist. If files are found in it, it will ask whether or not it should delete the files, and if not, whether or not to process those files. If you choose yes to processing those files, it will skip the initial steps of splitting the video into individual frames and will immediately start processing the frames of the previous source video.
 
 This works granted the frames from the previous run have not been deleted.
 
