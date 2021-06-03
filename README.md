@@ -1,6 +1,8 @@
 # video-lqr
 A batch script that liquid rescales videos
 
+*This repository was forked from my alternate GitHub account.*
+
 This does not use Photoshop or GIMP, just a **Linux environment**, **ffmpeg** and **imagemagick**. If you don't have Linux, you can install cygwin or use WSL (not tested on there though!).
 
 ### What is Seam Carving/Liquid Rescaling/Content Aware Scale?
