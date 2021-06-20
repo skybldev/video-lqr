@@ -1,5 +1,5 @@
 # video-lqr
-A batch script that liquid rescales videos
+A bash script that liquid rescales videos
 
 *This repository was forked from my alternate GitHub account.*
 
@@ -13,7 +13,7 @@ Usually when you want to perform that on an image you would use Photoshop's Cont
 
 ### What is this?
 
-I have written a script that automates that process, by:
+This script that automates that process, by:
 
 1. Splitting a video into its individual frames as .png files using ffmpeg
 2. Running imagemagick's `-liquid-rescale` on all of them
@@ -35,7 +35,7 @@ In order to use the script, place it into the folder where you want it to work i
 4. Output resolution<br>
    *This is the resolution to which you want to scale each of the frames. It can either be `WITDHxHEIGHT` <sup>e.g. 1600x900</sup> or a percentage of the original resolution.*
 
-After you enter said information, it will start working. It will usually take a while to convert all the frames.
+After you enter said information, it will start working. It will usually take a while to convert all the frames. If you entered something by mistake or want to halt the script for some reason, hit Ctrl+C.
 
 When it finishes creating the new video, it will ask if you want to delete the frames and other files it created during the process. Saying no will keep those files if you want to use them later.
 
@@ -52,7 +52,7 @@ This script supports arguments in a specific order.
 * **[outputRes]** a `WIDTHxHEIGHT` or percentage of the source resolution
 * **[fps]** the fps of the source video
 
-If none are entered then the script will act interactively.
+If none are entered then the script will act interactively. (See Basic Usage)
 
 ##### Reusing Frames
 
