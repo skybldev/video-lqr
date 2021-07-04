@@ -6,7 +6,7 @@ outputRes=""        # output resolution in WIDTHxHEIGHT
 fps=0               # fps for both input and output
 tempDir=".lqrtemp/" # temporary directory to store frames and work files
 keepFrames=0        # whether or not to delete frames upon finishing
-maxThreads=4        # maximum number of threads to use
+jobs=4              # max jobs to run at the same time
 parallel=0          # whether or not to parallelize the process
 
 err () {
@@ -19,6 +19,13 @@ warn () {
 
 ok () {
   printf ':: %s\n' "$1"
+}
+
+addCasSuffix () {
+  name=${1%%.*} # Get name without extension
+  ext=${1#*.}   # Get file extension
+
+  echo "$name-cas.$ext" # Add "-cas" to the end of the name
 }
 
 # -- Process options --
@@ -42,7 +49,7 @@ while test $# -gt 0; do
       echo "--parallel              Enables parallel processing using GNU Parallel. This"
       echo "                        often makes the ImageMagick part of the process much"
       echo "                        faster depending on how many cores your processor has."
-      echo "--max-threads THREADS   Specify the maximum threads that GNU Parallel will use."
+      echo "-j, --jobs JOBS         Specify the jobs GNU Parallel runs concurrently."
       exit 0
       ;;
     -i|--input)
@@ -78,9 +85,9 @@ while test $# -gt 0; do
       parallel=1
       shift
       ;;
-    --max-threads)
+    -j|--jobs)
       shift
-      maxThreads=$1
+      jobs=$1
       shift
       ;;
     *)
@@ -111,7 +118,16 @@ fi
 # Check output path
 if [ "$output" = "" ]; then
   output=$(basename "$input")
+elif [ -d "$output" ]; then
+  inputBase=$(basename "$input")                # Get input's basename
+  output=${output$/}                            # Trim trailing slash from output
+  output="$output/$(addCasSuffix "$inputBase")" # Put output file in directory
 fi
+
+if [ "$(realpath "$input")" = "$(realpath "$output")" ]; then
+  output=$(addCasSuffix "$output")
+fi
+
 ok "Will save to $output"
 
 # Check output resolution
@@ -146,7 +162,7 @@ else
   ok "Processing at $fps FPS."
 fi
 
-# Trim trailing whitespace from tempDir path
+# Trim trailing slash from tempDir path
 tempDir=${tempDir%/}
 
 # Create temp dir if it doesn't exist yet
@@ -157,15 +173,15 @@ fi
 
 # Check if GNU Parallel is installed and maxthreads if --parallel is passed
 if [ $parallel = 1 ]; then
-  command -v "parallel"
+  command -v "parallel" > /dev/null
 
   if [ $? = 1 ]; then
     err "GNU Parallel was not found on this system. Exiting."
     exit 1
   fi
 
-  if [ "$maxThreads" -le 0 ]; then
-    err "Max thread count must be above 0."
+  if [ "$jobs" -le 0 ]; then
+    err "Job count must be above 0."
     exit 1
   fi
 fi
@@ -179,16 +195,7 @@ if [ "$(find "$tempDir" -mindepth 1 -print -quit)" ]; then # Passes if non-empty
 else
   ok "Splitting frames into $tempDir..."
 
-  # Sincere note:
-  # I kindly do not care about the argument limit right now. Who is going to
-  # be liquid rescaling 75 minute long 25 FPS videos? Who will want to watch
-  # a comedically liquid rescaled 75 minute long video? What is more, who
-  # will be liquid rescaling a >120 FPS video? It's already jarring to watch
-  # one at 60 FPS. I have a few ideas on how to get around this but it will
-  # be a huge mess to try to implement it especially considering FFmpeg's
-  # weird caveats concerning splitting videos frame-perfectly. For now I will
-  # keep it simple and if someone, somewhere raises the issue, I will
-  # implement it. I hope you understand. Thank you. :)
+  # FFmpeg expands it internally, not the shell
   ffmpeg -v panic -i "$input" -vcodec png "$tempDir/%05d.png"
 fi
 
@@ -200,13 +207,13 @@ fi
 # Apply lqr to the images
 if [ $parallel = 0 ]; then
   ok "Liquid resizing frames to $outputRes..."
-  
+
   mogrify -monitor -path "$tempDir/resized/" -liquid-rescale "$outputRes!" "$tempDir/*.png"
 else
-  ok "Liquid resizing frames to $outputRes... (Parallelizing to up to $maxThreads threads)"
+  ok "Liquid resizing frames to $outputRes... (Parallelizing to up to $jobs jobs)"
 
   find "$tempDir" -maxdepth 1 -type f -name "*.png" | \
-    parallel -k mogrify -monitor -path "$tempDir/resized/" -liquid-rescale "$outputRes!" "{}"
+    parallel -k -j "$jobs" mogrify -monitor -path "$tempDir/resized/" -liquid-rescale "$outputRes!" "{}"
 fi
 
 if [ $? = 1 ]; then
@@ -216,8 +223,8 @@ fi
 
 # Finalize video
 ok "Parsing frames and adding audio to video..."
+  #-v error \
 ffmpeg \
-  -v error \
   -framerate "$fps" \
   -i "$tempDir/resized/%05d.png" \
   -i "$input" \
